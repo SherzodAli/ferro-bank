@@ -1,19 +1,39 @@
+import { Layout } from '@/components/layout/layout.component'
 import { NotFound } from '@/components/screens'
 
 import { ROUTES } from './routes.data'
 
 export class Router {
-	#routes
-	#currentRoute
+	#routes = ROUTES
+	#currentRoute = null
+	#layout = null
 
 	constructor() {
-		this.#routes = ROUTES
-		this.#currentRoute = null
+		window.addEventListener('popstate', () => this.#handleRouteChange())
+
 		this.#handleRouteChange()
+		this.#handleLinks()
+	}
+
+	#handleLinks() {
+		document.addEventListener('click', event => {
+			const target = event.target.closest('a')
+			if (!target) return
+
+			event.preventDefault()
+			this.navigate(target.href)
+		})
 	}
 
 	getCurrentPath() {
 		return window.location.pathname
+	}
+
+	navigate(path) {
+		if (path !== this.getCurrentPath()) {
+			window.history.pushState({}, '', path)
+			this.#handleRouteChange()
+		}
 	}
 
 	#handleRouteChange() {
@@ -21,11 +41,17 @@ export class Router {
 		let route = this.#routes.find(route => route.path === path)
 
 		this.#currentRoute = route ? route : { component: NotFound }
-		this.render()
+		this.#render()
 	}
 
-	render() {
+	#render() {
 		const component = new this.#currentRoute.component()
-		document.getElementById('app').innerHTML = component.render()
+
+		if (!this.#layout) {
+			this.#layout = new Layout({ router: this, children: component.render() })
+			document.getElementById('app').innerHTML = this.#layout.render()
+		} else {
+			document.querySelector('main').innerHTML = component.render()
+		}
 	}
 }
