@@ -1,4 +1,5 @@
 import { BaseScreen } from '@/core/component/base-screen.component'
+import { $F } from '@/core/fquery/fquery.lib'
 import renderService from '@/core/services/render.service'
 
 import styles from './home.module.scss'
@@ -11,6 +12,9 @@ export class Home extends BaseScreen {
 
 	render() {
 		const element = renderService.htmlToElement(template, [], styles)
+
+		$F(element).find('h1').css('color', 'pink')
+
 		return element.outerHTML
 	}
 }
