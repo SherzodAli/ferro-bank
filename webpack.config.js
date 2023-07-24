@@ -16,12 +16,12 @@ const plugins = [
 	new CleanWebpackPlugin(),
 	new HtmlWebpackPlugin({
 		template: 'index.html',
-		minify: { collapseWhitespace: isProduction, removeComments: isProduction },
+		minify: { collapseWhitespace: isProduction, removeComments: isProduction }
 	}),
 	new MiniCssExtractPlugin({
 		filename: isProduction ? '[name].[contenthash].css' : '[name].css',
-		chunkFilename: isProduction ? '[id].[contenthash].css' : '[id].css',
-	}),
+		chunkFilename: isProduction ? '[id].[contenthash].css' : '[id].css'
+	})
 ]
 
 module.exports = {
@@ -31,25 +31,28 @@ module.exports = {
 	output: {
 		filename: isProduction ? '[name].[contenthash].js' : '[name].js',
 		path: path.resolve(__dirname, 'dist'),
-		assetModuleFilename: 'public/[name].[contenthash][ext][query]',
+		assetModuleFilename: 'public/[name].[contenthash][ext][query]'
 	},
 	resolve: {
 		extensions: ['.js'],
-		alias: { '@': path.resolve(__dirname, 'src/') },
+		alias: { '@': path.resolve(__dirname, 'src/') }
 	},
 	devtool: isProduction ? false : 'source-map',
 	devServer: {
 		port: 7777,
 		hot: true,
 		static: { directory: path.resolve(__dirname, 'public') },
-		historyApiFallback: true,
+		historyApiFallback: true
 	},
 	optimization: {
 		minimize: isProduction,
 		minimizer: [
 			new CssMinimizerPlugin(),
-			new TerserPlugin({ parallel: true, terserOptions: { format: { comments: false } } }),
-		],
+			new TerserPlugin({
+				parallel: true,
+				terserOptions: { format: { comments: false } }
+			})
+		]
 	},
 	plugins,
 	module: {
@@ -58,7 +61,10 @@ module.exports = {
 			{
 				test: /\.js$/i,
 				exclude: /node-modules/,
-				use: [{ loader: 'babel-loader', options: { presets: ['@babel/preset-env'] } }],
+				use: {
+					loader: 'babel-loader',
+					options: { presets: ['@babel/preset-env'] }
+				}
 			},
 			{
 				test: /\.module\.s[ac]ss$/i,
@@ -66,33 +72,36 @@ module.exports = {
 					isProduction ? MiniCssExtractPlugin.loader : 'style-loader',
 					{
 						loader: 'css-loader',
-						options: { modules: { localIndentName: '[local]_[hash:base64:7]' } },
+						options: { modules: { localIdentName: '[local]_[hash:base64:7]' } }
 					},
-					{ loader: 'sass-loader', options: { sourceMap: true } },
-				],
+					{ loader: 'sass-loader', options: { sourceMap: true } }
+				]
 			},
 			{
 				test: /^((?!\.module).)*s[ac]ss$/i,
 				use: [
 					isProduction ? 'style-loader' : MiniCssExtractPlugin.loader,
 					'css-loader',
-					{ loader: 'sass-loader', options: { sourceMap: true } },
-				],
+					{ loader: 'sass-loader', options: { sourceMap: true } }
+				]
 			},
 			{
 				test: /\.css$/i,
 				use: [
 					'style-loader',
 					'css-loader',
-					{ loader: 'postcss-loader', options: { sourceMap: true } },
-				],
+					{ loader: 'postcss-loader', options: { sourceMap: true } }
+				]
 			},
 			{ test: /\.(png|svg|jpg|jpeg|gif)$/i, type: 'asset/resource' },
 			{
 				test: /\.m?js$/i,
 				exclude: /node-modules/,
-				use: [{ loader: 'babel-loader', options: { presets: ['@babel/preset-env'] } }],
-			},
-		],
-	},
+				use: {
+					loader: 'babel-loader',
+					options: { presets: ['@babel/preset-env'] }
+				}
+			}
+		]
+	}
 }
