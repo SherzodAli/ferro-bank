@@ -1,6 +1,8 @@
 import { Layout } from '@/components/layout/layout.component'
 import { NotFound } from '@/components/screens'
 
+import { $F } from '../fquery/fquery.lib'
+
 import { ROUTES } from './routes.data'
 
 export class Router {
@@ -49,9 +51,10 @@ export class Router {
 
 		if (!this.#layout) {
 			this.#layout = new Layout({ router: this, children: component.render() })
-			document.getElementById('app').innerHTML = this.#layout.render()
+
+			$F('#app').append(this.#layout.render())
 		} else {
-			document.querySelector('main').innerHTML = component.render()
+			$F('#content').html('').append(component.render())
 		}
 	}
 }

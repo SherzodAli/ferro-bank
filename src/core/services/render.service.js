@@ -1,7 +1,11 @@
+import { BaseScreen } from '../component/base-screen.component'
 import ChildComponent from '../component/child.component'
 
 class RenderService {
+	#componentTagPattern = /^component-/
+
 	/**
+	 * Renders custom html tags, css classes to a normal html
 	 * @param {string} html
 	 * @param {Array} components
 	 * @param {Object} [styles]
@@ -22,39 +26,66 @@ class RenderService {
 	}
 
 	/**
-	 *
+	 * Replaces custom html tags to its html content
 	 * @param {HTMLElement} parentElement
 	 * @param {Array} components
 	 */
 	#replaceComponentTags(parentElement, components) {
-		const componentTagPattern = /^component-/
-		const allElements = parentElement.getElementsByTagName('*')
+		const allElements = [...parentElement.getElementsByTagName('*')]
 
-		for (const element of allElements) {
-			const elementTagName = element.tagName.toLowerCase()
-			if (componentTagPattern.test(elementTagName)) {
-				const componentName = elementTagName
-					.replace(componentTagPattern, '')
-					.replace(/-/g, '')
-				const foundComponent = components.find(Component => {
-					const instance =
-						Component instanceof ChildComponent ? Component : new Component()
-					return instance.constructor.name.toLowerCase() === componentName
-				})
+		allElements.map(element => {
+			if (!this.#componentTagPattern.test(element.tagName.toLowerCase())) return
 
-				if (foundComponent) {
-					const componentContent =
-						foundComponent instanceof ChildComponent
-							? foundComponent.render()
-							: new foundComponent().render()
-					element.replaceWith(componentContent)
-				} else {
-					console.error(
-						`Component "${componentName}" not found in the provided components array.`
-					)
-				}
-			}
+			const foundComponent = this.#findComponent(element, components)
+			if (!foundComponent) return
+
+			element.replaceWith(this.#getComponentContent(foundComponent))
+		})
+	}
+
+	/**
+	 * Finds specified component by name in provided components list
+	 * @param {HTMLElement} element
+	 * @param {Array} components
+	 * @returns {ChildComponent|BaseScreen}
+	 */
+	#findComponent(element, components) {
+		const componentName = element.tagName
+			.toLowerCase()
+			.replace(this.#componentTagPattern, '')
+			.replace(/-/g, '')
+
+		const foundComponent = components.find(Component => {
+			const instance =
+				Component instanceof ChildComponent ? Component : new Component()
+			return instance.constructor.name.toLowerCase() === componentName
+		})
+
+		if (!foundComponent) {
+			console.error(
+				`Component "${componentName}" not found in the provided components array.`
+			)
+			return
 		}
+
+		return foundComponent
+	}
+
+	/**
+	 * Gets html content of the component
+	 * @param {ChildComponent|BaseScreen} component
+	 * @returns {string}
+	 */
+	#getComponentContent(component) {
+		if (component instanceof BaseScreen) {
+			return new component.render()
+		}
+
+		if (component instanceof ChildComponent) {
+			return component.render()
+		}
+
+		throw new Error('Component must be type of ChildComponent or BaseScreen')
 	}
 
 	/**
